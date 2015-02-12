@@ -40,10 +40,11 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <LinkIncremental>true</LinkIncremental>
+    <LinkIncremental>false</LinkIncremental>
     <IncludePath>$(BOX2D);..\Engine\src;$(SDL)/include;$(SDL_image)/include;$(IncludePath)</IncludePath>
     <LibraryPath>..\External\Box2D_v2.3.0\Box2D\Build\vs2012\bin\$(Configuration);$(BOX2D)\Build\vs2012\bin\$(Configuration);..\$(Configuration);$(SDL)/lib/x86;$(SDL_image)/lib/x86;$(LibraryPath)</LibraryPath>
     <SourcePath>$(BOX2D);$(SourcePath)</SourcePath>
+    <ReferencePath>$(ReferencePath)</ReferencePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
