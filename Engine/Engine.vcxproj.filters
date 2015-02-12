@@ -25,9 +25,6 @@
     <ClCompile Include="src\InputManager.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="src\Player.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\GameEngine.h">
@@ -45,11 +42,5 @@
     <ClInclude Include="src\InputManager.h">
       <Filter>Source</Filter>
     </ClInclude>
-    <ClInclude Include="src\Player.h">
-      <Filter>Source</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="king_tiger.png" />
   </ItemGroup>
 </Project>
