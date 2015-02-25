@@ -4,164 +4,244 @@
 #include <math.h>
 #include <stdio.h>
 
+/*
+* Function name -
+* Description   -
+* Return value	-
+*/
 Player::Player() : GameObject()
 {
-	_transform.position = { 400.0f, 400.0f, 0.0f };
 }
 
-Player::~Player()
+/*
+* Function name - Initialize()
+* Description   - Initializes a player's tank
+* Return value	- none
+*/
+void Player::Initialize(SDL_Renderer* renderer, char* file)
 {
+	int h, w = 20;
+
+	tankTexture = IMG_LoadTexture(renderer, file);
+	if (tankTexture == NULL)
+	{
+		printf(SDL_GetError());
+		printf("\n");
+	}
+
+	if (SDL_QueryTexture(tankTexture, NULL, NULL, &h, &w))
+	{
+		printf(SDL_GetError());
+		printf("\n");
+	}
+
+	_shipOffset = { 0, 0 };
+	_rotationDegrees = 90.0f;
+	_speed = 0;
+	_score = 0;
+	_ship = { 320, 320 };
 }
 
-// Initializes the spaceships attributes and properties
-void Player::Initialize()
-{
-	shoot = false;
-	shootDown = true;
-	hits = 0;
-	rotationDegrees = 0.0f;
-	rotationSpeed = 100.0f;
-	velocity = { 0.0f, 0.0f };
-	rateOfAcc = 15.0;
-	friction = 0.9999f;
-	ship.x = 320;
-	ship.y = 320;
-	endPointOffsetA = { 0, 15 };;
-	initBullets();
-	ship2 = { 320, 320, 30, 30 };
-}
-
-// Update the player's spaceship checking screen bounds, bullets fired, and rotation
+/*
+* Function name -
+* Description   -
+* Return value	-
+*/
 void Player::Update(float dt)
 {
-	rotationDegrees += (rotationDegrees >= 360.0f ? -360.0f : 0);
-	rotationRadians = MathUtils::ToRadians(rotationDegrees);
+	//Reset rotation if it exceeds 360 degrees
+	_rotationDegrees += (_rotationDegrees >= 360.0f ? -360.0f : 0);
 
-	// Handles player going out of the screen bounds
-	if (ship2.y > 639)
-		ship2.y = 0;
-	if (ship2.y < 1)
-		ship2.y = 640;
-	if (ship2.x > 639)
-		ship2.x = 0;
-	if (ship2.x < 1)
-		ship2.x = 640;
-
-	// Update the players position based on their velocity
-	ship2.x += (dt*velocity.x);
-	ship2.y += (dt*velocity.y);
-
-	// Fire
-	if (shoot == true)
-	{
-		Fire();
-	}
-
-	// Update the bullets
-	/*
-	for (int j = 0; j < MAXBULLETS; j++)
-	{
-		if (bullet[j].ttl > 0)
-			bullet[j].Update(dt);
-	}
-	*/
-
-	/* Caps velocity to limit speed
-	if (velocity.x > 50)
-	velocity.x = 50;
-	if (velocity.y > 50)
-	velocity.y = 50;
-	if (velocity.x < -50)
-	velocity.x = -50;
-	if (velocity.y < -50)
-	velocity.y = -50;
-	*/
-
+	_ship = Move(_ship, _rotationDegrees, (dt * _speed) * -1);
 }
 
-// calculates new offsets based on players rotation and draws the spaceship
+/*
+* Function name -
+* Description   -
+* Return value	-
+*/
 void Player::Draw(SDL_Renderer *renderer, float dt)
 {
-	rotatedOffsetA =
-	{
-		endPointOffsetA.x * cosf(rotationRadians) + endPointOffsetA.y * sinf(rotationRadians),
-		endPointOffsetA.x * sinf(rotationRadians) - endPointOffsetA.y * cosf(rotationRadians)
-	};
+	tankPos = { 10, 15 };
 
-	rotatedOffsetB =
-	{
-		endPointOffsetB.x * cosf(rotationRadians) + endPointOffsetB.y * sinf(rotationRadians),
-		endPointOffsetB.x * sinf(rotationRadians) - endPointOffsetB.y * cosf(rotationRadians)
-	};
+	tank.x = (_ship.x - 20);
+	tank.y = (_ship.y - 30);
 
-	rotatedOffsetC =
-	{
-		endPointOffsetC.x * cosf(rotationRadians) + endPointOffsetC.y * sinf(rotationRadians),
-		endPointOffsetC.x * sinf(rotationRadians) - endPointOffsetC.y * cosf(rotationRadians)
-	};
+	tank.w = 20;
+	tank.h = 30;
 
-	// Calculate the new position for the spaceship
-	transformedEndPointA = { ship2.x + rotatedOffsetA.x, ship2.y + rotatedOffsetA.y };
-	transformedEndPointB = { ship2.x + rotatedOffsetB.x, ship2.y + rotatedOffsetB.y };
-	transformedEndPointC = { ship2.x + rotatedOffsetC.x, ship2.y + rotatedOffsetC.y };
-
-	// Draw the ship
-	SDL_RenderDrawLine(renderer, transformedEndPointA.x, transformedEndPointA.y, transformedEndPointB.x, transformedEndPointB.y);
-	SDL_RenderDrawLine(renderer, transformedEndPointB.x, transformedEndPointB.y, transformedEndPointC.x, transformedEndPointC.y);
-	SDL_RenderDrawLine(renderer, transformedEndPointC.x, transformedEndPointC.y, transformedEndPointA.x, transformedEndPointA.y);
-
-	// Redraw the bullets
-	/*
-	for (int j = 0; j < MAXBULLETS; j++)
-	{
-		if (bullet[j].ttl > 0)
-			bullet[j].Draw(renderer, dt);
-	}
-	*/
+	SDL_RenderCopyEx(renderer, tankTexture, NULL, &tank, _rotationDegrees, &tankPos, SDL_FLIP_NONE);
 }
 
-// Fire's a bullet from the spaceship. array of bullets holds MAXBULLETS which is default 10.
-void Player::Fire()
+/*
+ * Function name -	isAlive()
+ * Description	 -	checks if a player is currently alive
+ * Return value	 -	true if a player is alive, false otherwise
+ */
+bool Player::isAlive()
 {
-	// If the player pressed space to fire a bullet
-	if (shoot == true)
-	{
-		// If the shoot button has been released
-		if (shootDown == true)
-		{
-			shootDown = false;
-			int index = -1;
-			// Check if there is an empty bullet slot
-			/*
-			for (int i = 0; i < MAXBULLETS; i++)
-			{
-				// Found an empty bullet slot
-				if (bullet[i].ttl <= 0)
-				{
-					index = i;
-					break;
-				}
-			}
-			// No free slots for bullets found
-			if (index == -1)
-				return;
+	return _alive;
+}
 
-			bullet[index].setOrigin(ship);
-			bullet[index].setRotation(rotationRadians);
-			bullet[index].Initialize();
-			*/
-		}
+/*
+* Function name -
+* Description   -
+* Return value	-
+*/
+int Player::getScore()
+{
+	return _score;
+}
+
+/*
+* Function name -
+* Description   -
+* Return value	-
+*/
+void Player::Kill()
+{
+	_alive = false;
+}
+
+/*
+* Function name -
+* Description   -
+* Return value	-
+*/
+void Player::Spawn()
+{
+	_alive = true;
+}
+
+/*
+* Function name -
+* Description   -
+* Return value	-
+*/
+void Player::incrementScore()
+{
+	_score += 10;
+}
+
+/*
+* Function name -
+* Description   -
+* Return value	-
+*/
+void Player::SetRotation(int degrees)
+{
+	
+	_rotationDegrees = degrees;
+}
+
+/*
+* Function name -
+* Description   -
+* Return value	-
+*/
+int Player::GetRotation()
+{
+	return _rotationDegrees;
+}
+
+/*
+* Function name -
+* Description   -
+* Return value	-
+*/
+void Player::SetSpeed(int speed)
+{
+	_speed = speed;
+}
+
+/*
+* Function name -
+* Description   -
+* Return value	-
+*/
+int Player::GetSpeed()
+{
+	return _speed;
+}
+
+/*
+* Function name -
+* Description   -
+* Return value	-
+*/
+bool Player::CheckCollision(Vector2 playerPos)
+{
+	/*Convert direction to radians.*/
+	_rotationRadians = MathUtils::ToRadians(_rotationDegrees);
+
+	/*Calculate new point based on center.*/
+	float newPointX = (cos(_rotationRadians) * _ship.x) - (sin(_rotationRadians) * _ship.y);
+	float newPointY = (sin(_rotationRadians) * _ship.x) + (cos(_rotationRadians) * _ship.y);
+
+	newPointX = _ship.x + newPointX;
+	newPointY = _ship.y + newPointY;
+
+	/*Check if point is in collision range.*/
+	if (playerPos.x <= (newPointX + 8) && playerPos.x >= (newPointX - 8) &&
+		playerPos.y <= (newPointY + 8) && playerPos.y >= (newPointY - 8))
+	{
+		return true;
+	}
+	else
+	{
+		return false;
 	}
 }
 
-// Initializes
-void Player::initBullets()
+/*
+* Function name - SetPosition()
+* Description   - Sets the position of a player to a given point
+* Return value	- none
+*/
+void Player::SetPosition(Vector2 pos)
 {
-	/*
-	for (int i = 0; i < MAXBULLETS; i++)
-	{
-		bullet[i].ttl = 0;
-		bullet[i].bullet = { 0, 0 };
-	}
-	*/
+	_ship = pos;
+}
+
+/*
+* Function name - GetPosition()
+* Description   - Returns the position of a player
+* Return value	- A Vector2 representing a players position in the game
+*/
+Vector2 Player::GetPosition()
+{
+	return _ship;
+}
+
+/*
+* Function name	-	Move()
+* Description	-	
+* Return value	-	a Vector2 containing the new location of the ship
+*/
+Vector2 Player::Move(Vector2 playerPos, float dir, float speed)
+{
+	float rotationRadians = MathUtils::ToRadians(dir);
+
+	float oldX = playerPos.x;
+	float oldY = playerPos.y;
+
+	float newX = sin(-1 * rotationRadians);
+	float newY = cos(-1 * rotationRadians);
+
+	float magnitude = sqrt((newX * newX) + (newY * newY));
+	float pointX = newX / magnitude;
+	float pointY = newY / magnitude;
+
+	return { (oldX + (pointX * speed)), (oldY + (pointY * speed)) };
+}
+
+/*
+* Function name	-	NudgePlayer()
+* Description	-	Nudges the player if they collide with something
+* Return value	-	none
+*/
+void Player::NudgePlayer(float dt)
+{
+	_ship = Move(_ship, _rotationDegrees, ((dt * _speed) * 25));
+	_speed = 0;
 }

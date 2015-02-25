@@ -3,68 +3,52 @@
 #include "GameObject.h"
 #include "MathUtils.h"
 
-struct spaceShip
-{
-	Vector2 midPoint;
-};
+#define WIDTH 10
+#define HEIGHT 10
 
 class Player : public GameObject
 {
 public:
 	Player();
-	~Player();
-
-	void Initialize();
-
+	void Initialize(SDL_Renderer* renderer, char *file);
 	void Update(float dt);
 	void Draw(SDL_Renderer *renderer, float dt);
 
-	void Fire();
-	void initBullets();
+	Vector2 Player::Move(Vector2 playerPos, float dir, float speed);
 
-	// Handles bullet fire on release instead of press
-	bool shoot;
-	bool shootDown;
+	void SetPosition(Vector2 pos);
+	Vector2 GetPosition();
 
-	// Rotation angle
-	float rotationDegrees;
-	// Rotation speed
-	float rotationSpeed;
-	// After calculation
-	float rotationRadians;
+	void SetRotation(int degrees);
+	int GetRotation();
 
-	// Ship's mid point
-	Vector2 ship;
+	void SetSpeed(int speed);
+	int GetSpeed();
 
-	// Ship's velocity
-	Vector2 velocity;
+	int getScore();
 
-	SDL_Rect ship2;
+	void Kill();
+	void Spawn();
+	void NudgePlayer(float dt);
+	bool CheckCollision(Vector2 playerPos);
+	bool isAlive();
+	void incrementScore();
+	~Player(); 
 
-	// Points to draw a triangular ship
-	Vector2 endPointOffsetA;
-	Vector2 endPointOffsetB;
-	Vector2 endPointOffsetC;
+protected:
+	int _rotationDegrees;
+	float _rotationRadians;
+	int _speed;
+	float _score;
+	float _rateOfAcc;
 
-	// Calculated in draw to rotate spaceship's points
-	Vector2 rotatedOffsetA;
-	Vector2 rotatedOffsetB;
-	Vector2 rotatedOffsetC;
+	Vector2 _ship;
+	Vector2 _shipOffset;
 
-	// Calculated in update to draw spaceship's new position
-	Vector2 transformedEndPointA;
-	Vector2 transformedEndPointB;
-	Vector2 transformedEndPointC;
+	SDL_Rect tank;
+	SDL_Point tankPos;
 
-	// Friction slows the spaceship down
-	float friction;
+	SDL_Texture* tankTexture;
 
-	// Used to calculate how much faster the ship gets while thrusting
-	float rateOfAcc;
-
-	// Number of asteroids hit
-	int hits;
-
-	// Array for the bullets default to 10
-	//Bullet bullet[MAXBULLETS];
+	bool _alive;
 };

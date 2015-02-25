@@ -25,7 +25,13 @@
     <ClCompile Include="src\InputManager.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="src\Map.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
     <ClCompile Include="src\Player.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Bullet.cpp">
       <Filter>Source</Filter>
     </ClCompile>
   </ItemGroup>
@@ -45,11 +51,18 @@
     <ClInclude Include="src\InputManager.h">
       <Filter>Source</Filter>
     </ClInclude>
+    <ClInclude Include="src\Map.h">
+      <Filter>Source</Filter>
+    </ClInclude>
     <ClInclude Include="src\Player.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Bullet.h">
       <Filter>Source</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="king_tiger.png" />
+    <Image Include="greentank.png" />
+    <Image Include="bluetank.png" />
   </ItemGroup>
 </Project>
